@@ -1,8 +1,14 @@
 package com.example.customalarm;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -14,7 +20,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,9 +34,9 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -45,27 +50,49 @@ public class Edit extends Activity {
 	StringBuilder editdays = new StringBuilder();
 	StringBuilder editdaystext = new StringBuilder();
 	StringBuilder edittime = new StringBuilder();
+	ArrayList<Integer> days = new ArrayList<Integer>();
 	String editswitch;
 	Context context = this;
 	Switch onoff;
 	Resources res;
 	SharedPreferences storage;
-	ArrayList<Integer> days = new ArrayList<Integer>();
-	int position;
+	Editor editor;
+	String alarm_name;
+	ArrayList<String> alarms = new ArrayList<String>();
+	ArrayList<String> alarm = new ArrayList<String>();
 	MediaPlayer mMediaPlayer;
+	int song_id;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.edit);
 		
 		storage = getSharedPreferences("storage", Context.MODE_PRIVATE);
+		editor = storage.edit();
 		
 		Bundle extras = getIntent().getExtras();
-		if (extras != null) {
-		    position = extras.getInt("position");
+		if (extras != null) 
+		{
+			alarm_name = extras.getString("alarm");
+		    if(alarm_name.equals(""))
+		    {
+		    	alarm_name = generateRandomString();
+		    }
+		    if(storage.getStringSet("alarms", null) == null)
+		    {
+		    	alarms = new ArrayList<String>();
+		    }
+		    else
+		    {
+		    	alarms = new ArrayList<String>(storage.getStringSet("alarms", null));
+		    }
+			alarms.add(alarm_name);
+		    for(int i = 0; i < 12; i++)
+		    {
+		    	alarm.add(storage.getString(alarm_name+"_"+i, ""));
+		    }
 		}
 		
 		save = (Button) findViewById(R.id.button1);
@@ -92,8 +119,16 @@ public class Edit extends Activity {
 				
 				if(play.isChecked())
 				{
-					mMediaPlayer.seekTo(0);
-					mMediaPlayer.start();
+					if(song_id == 0)
+					{
+						mMediaPlayer = MediaPlayer.create(Edit.this, R.raw.beautifulsms);
+				        mMediaPlayer.start();
+					}
+					else
+					{
+						mMediaPlayer = MediaPlayer.create(Edit.this, song_id);
+				        mMediaPlayer.start();
+					}
 				}
 				else
 				{
@@ -111,59 +146,62 @@ public class Edit extends Activity {
 				registerForContextMenu(arg0); 
 				openContextMenu(arg0);
 				unregisterForContextMenu(arg0);
+				play.setChecked(false);
+				mMediaPlayer.pause();
 			}
 		});
 		
-		String s = storage.getString(""+(position*3), "");
-		String s1 = storage.getString("days", "");
-		String s2 = storage.getString(""+(position*3+2), "");
-		
-		if(s2.equalsIgnoreCase("on"))
+		if(!alarm.get(10).equals(""))
 		{
-			music.setText(storage.getString("song", ""));
+			music.setText(alarm.get(10));
+			changemusic(alarm.get(10).toLowerCase());
 		}
 			
 		try
 		{
-			int t = Integer.parseInt(s.substring(0, 2));
-			int u = Integer.parseInt(s.substring(3, 5));
-			time.setCurrentHour(t);
-			time.setCurrentMinute(u);
+			if(!alarm.get(1).equals("") || !alarm.get(2).equals(""))
+			{
+				int hour = Integer.parseInt(alarm.get(1));
+				int minute = Integer.parseInt(alarm.get(2));
+				time.setCurrentHour(hour);
+				time.setCurrentMinute(minute);
+			}
 		}
 		catch(Exception e)
 		{
+			Toast.makeText(this, "An Error Occurred", Toast.LENGTH_SHORT).show();
 		}
 		
-		if(s1.contains("1"))
+		if(!alarm.get(3).equals(""))
 		{
 			sun.setChecked(true);
 		}
-		if(s1.contains("2"))
+		if(!alarm.get(4).equals(""))
 		{
 			mon.setChecked(true);
 		}
-		if(s1.contains("3"))
+		if(!alarm.get(5).equals(""))
 		{
 			tue.setChecked(true);
 		}
-		if(s1.contains("4"))
+		if(!alarm.get(6).equals(""))
 		{
 			wed.setChecked(true);
 		}
-		if(s1.contains("5"))
+		if(!alarm.get(7).equals(""))
 		{
 			thu.setChecked(true);
 		}
-		if(s1.contains("6"))
+		if(!alarm.get(8).equals(""))
 		{
 			fri.setChecked(true);
 		}
-		if(s1.contains("7"))
+		if(!alarm.get(9).equals(""))
 		{
 			sat.setChecked(true);
 		}
 		
-		if(s2.equalsIgnoreCase("On"))
+		if(alarm.get(0).equalsIgnoreCase("On"))
 		{
 			onoff.setChecked(true);
 		}
@@ -172,8 +210,17 @@ public class Edit extends Activity {
 			onoff.setChecked(false);
 		}
 		
-		volume.setProgress(80);
-		volumevalue.setText("80");
+		if(!alarm.get(11).equals(""))
+		{
+			int vol = Integer.parseInt(alarm.get(11));
+			volume.setProgress(vol);
+			volumevalue.setText(""+vol);
+		}
+		else
+		{
+			volume.setProgress(80);
+			volumevalue.setText("80");
+		}
 		
 		volume.setOnSeekBarChangeListener(new OnSeekBarChangeListener(){
 
@@ -181,6 +228,7 @@ public class Edit extends Activity {
 			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
 				// TODO Auto-generated method stub
 				volumevalue.setText(""+arg1);
+				alarm.set(11, ""+arg1);
 			}
 
 			@Override
@@ -197,65 +245,53 @@ public class Edit extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				
 				if(onoff.isChecked())
 				{
-					editswitch = "On";
+					alarm.set(0, "ON");
 				}
 				else
 				{
-					editswitch = "Off";
+					alarm.set(0, "OFF");
 				}
-				
 				if(sun.isChecked())
 				{
-					editdaystext.append("S ");
-					days.add(1);
+					alarm.set(3, "Y");
+					days.add(0);
 				}
 				if(mon.isChecked())
 				{
-					editdaystext.append("M ");
-					days.add(2);
+					alarm.set(4, "Y");
+					days.add(1);
 				}
 				if(tue.isChecked())
 				{
-					editdaystext.append("T ");
-					days.add(3);
+					alarm.set(5, "Y");
+					days.add(2);
 				}
 				if(wed.isChecked())
 				{
-					editdaystext.append("W ");
-					days.add(4);
+					alarm.set(6, "Y");
+					days.add(3);
 				}
 				if(thu.isChecked())
 				{
-					editdaystext.append("T ");
-					days.add(5);
+					alarm.set(7, "Y");
+					days.add(4);
 				}
 				if(fri.isChecked())
 				{
-					editdaystext.append("F ");
-					days.add(6);
+					alarm.set(8, "Y");
+					days.add(5);
 				}
 				if(sat.isChecked())
 				{
-					editdaystext.append("S ");
-					days.add(7);
+					alarm.set(9, "Y");
+					days.add(6);
 				}
 				
 				if(days.size() == 0)
 				{
-					AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-		            builder1.setMessage("Please select at least a day");
-		            builder1.setPositiveButton("Ok",
-		                    new DialogInterface.OnClickListener() {
-		                public void onClick(DialogInterface dialog, int id) {
-		                    dialog.cancel();
-		                }
-		            });
-
-		            AlertDialog alert11 = builder1.create();
-		            alert11.show();
+					Toast.makeText(Edit.this, "Please pick at least 1 day", Toast.LENGTH_SHORT).show();
 				}
 				else
 				{
@@ -266,21 +302,21 @@ public class Edit extends Activity {
 					{
 						edittime.append("0");
 						edittime.append(time.getCurrentHour());
+						alarm.set(1, edittime.toString());
 					}
 					else
 					{
 						edittime.append(time.getCurrentHour());
+						alarm.set(1, edittime.toString());
 					}
 					
 					if(time.getCurrentMinute() < 10)
 					{
-						edittime.append(":0");
-						edittime.append(time.getCurrentMinute());
+						alarm.set(2, "0"+time.getCurrentMinute());
 					}
 					else
 					{
-						edittime.append(":");
-						edittime.append(time.getCurrentMinute());
+						alarm.set(2, ""+time.getCurrentMinute());
 					}
 					
 					if(onoff.isChecked())
@@ -288,16 +324,11 @@ public class Edit extends Activity {
 				        setAlarm(days);
 					}
 					
-					for(int i = 0; i<days.size();i++)
+					for(int i = 0; i < 12; i++)
 					{
-						editdays.append(""+days.get(i));
+						editor.putString(alarm_name+"_"+i, alarm.get(i));
 					}
-					editor.putString("days", editdays.toString());
-					editor.putString(""+(position*3), edittime.toString());
-					editor.putString(""+(position*3+1), editdaystext.toString());
-					editor.putString(""+(position*3+2), editswitch);
-					editor.putString("load", "yes");
-					editor.putInt("volume", volume.getProgress());
+					editor.putStringSet("alarms", new HashSet<String>(alarms));
 					editor.commit();
 					
 					startActivity(intent);
@@ -352,69 +383,55 @@ public class Edit extends Activity {
 	}
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		storage = getSharedPreferences("storage", Context.MODE_PRIVATE);
-		Editor editor = storage.edit();
 		music = (Button) findViewById(R.id.button2);
-		
 		if (item.getTitle() == "BeatifulSMS") 
 		{
-			editor.putString("song", "beautifulsms");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		} 
 		else if (item.getTitle() == "BestWakeUpSound") 
 		{
-			editor.putString("song", "bestwakeupsound");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		} 
 		else if (item.getTitle() == "CoolestAlarmClock") 
 		{
-			editor.putString("song", "coolestalarmclock");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		}
 		else if (item.getTitle() == "ExtremeClockAlarm") 
 		{
-			editor.putString("song", "extremeclockalarm");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		}
 		else if (item.getTitle() == "ICantStopDubstep") 
 		{
-			editor.putString("song", "icantstopdubstep");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		}
 		else if (item.getTitle() == "NuclearAlarm") 
 		{
-			editor.putString("song", "nuclearalarm");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		}
 		else if (item.getTitle() == "RockClassic") 
 		{
-			editor.putString("song", "rockclassic");
 			music.setText(item.getTitle());
+			alarm.set(10, (String) item.getTitle());
 		}
 		else 
 		{
 			return false;
 		}
-		editor.commit();
-		changemusic();
+		changemusic((String) music.getText());
 		return true;
 	}
 	
-	public void changemusic()
+	public void changemusic(String song)
 	{
 		mMediaPlayer.reset();
 		Resources res = context.getResources();
-		storage = getSharedPreferences("storage", Context.MODE_PRIVATE);
-		int id = res.getIdentifier(storage.getString("song", ""), "raw", context.getPackageName());
-		try 
-		{
-			mMediaPlayer.setDataSource(context, Uri.parse("android.resource://com.example.customalarm/"+id));
-			mMediaPlayer.prepareAsync();
-		}
-		catch(IOException e)
-		{
-			Toast.makeText(this, "Ringtone not found!", Toast.LENGTH_LONG).show();
-		}
+		song_id = res.getIdentifier(song.toLowerCase(), "raw", context.getPackageName());
 	}
 
 	@Override
@@ -439,6 +456,13 @@ public class Edit extends Activity {
         
         AlertDialog alert11 = builder1.create();
         alert11.show();
+	}
+	
+	public String generateRandomString()
+	{
+		SecureRandom random = new SecureRandom();
+		String str = new BigInteger(130, random).toString(32);
+		return str;
 	}
 
 }

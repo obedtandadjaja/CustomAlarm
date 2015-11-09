@@ -1,25 +1,25 @@
 package com.example.customalarm;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-import android.support.v7.app.ActionBarActivity;
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -29,62 +29,72 @@ import android.widget.Toast;
 public class MainActivity extends ActionBarActivity {
 
 	ListView listview;
+	Button add;
+	TextView text;
 	SharedPreferences storage;
 	Editor editor;
-	int loadsize = 39;
-	ArrayList<String> list = new ArrayList<String>();
+	ArrayList<String[]> list = new ArrayList<String[]>();
+	ArrayList<String> alarms;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.noalarm);
 		
 		storage = getSharedPreferences("storage", Context.MODE_PRIVATE);
 		editor = storage.edit();
 		
-		if(storage.getString("load", "").equalsIgnoreCase("yes"))
-		{
-			for(int i = 0; i < loadsize; i++)
-			{
-				list.add(storage.getString(""+i, ""));
-			}
-		}
+		listview = (ListView) findViewById(R.id.listView1);
+		text = (TextView) findViewById(R.id.textView1);
+		add = (Button) findViewById(R.id.button1);
 		
-		// if application is first used
+		if(storage.getStringSet("alarms", null) == null)
+		{
+			listview.setVisibility(View.INVISIBLE);
+			text.setVisibility(View.VISIBLE);
+			alarms = new ArrayList<String>();
+		}
 		else
 		{
-			editor.putString("load", "no");
-			for(int i = 0; i < loadsize; i++)
+			listview.setVisibility(View.VISIBLE);
+			text.setVisibility(View.INVISIBLE);
+			alarms = new ArrayList<String>(storage.getStringSet("alarms", null));
+			for(int i = 0; i < alarms.size(); i++)
 			{
-				editor.putString(""+i, "");
+				String[] string_array = new String[11];
+				for(int k = 0; k < string_array.length; k++)
+				{
+					string_array[k] = storage.getString(alarms.get(i)+"_"+k, "");
+				}
+				list.add(string_array);
 			}
-			editor.putString("load", "no");
-			editor.commit();
-			for(int i = 0; i < loadsize; i++)
-			{
-				list.add(storage.getString(""+i, ""));
-			}
+			ListViewAdapter adapter = new ListViewAdapter(list, this);
+			listview.setAdapter(adapter);
+			listview.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener(){
+
+				@Override
+				public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+					// TODO Auto-generated method stub
+					
+					Intent myIntent = new Intent(v.getContext(), Edit.class);
+					myIntent.putExtra("alarm", alarms.get(position));
+					startActivity(myIntent);
+				}
+			});
 		}
 		
-		ListViewAdapter adapter = new ListViewAdapter(list, this);
-		
-		listview = (ListView) findViewById(R.id.listView1);
-		listview.setAdapter(adapter);
-		listview.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener(){
-
+		add.setOnClickListener(new OnClickListener()
+		{
 			@Override
-			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Toast.makeText(getBaseContext(), "Redirecting...", Toast.LENGTH_SHORT).show();
 				Intent myIntent = new Intent(v.getContext(), Edit.class);
-				myIntent.putExtra("position", position);
+				myIntent.putExtra("alarm", "");
 				startActivity(myIntent);
 			}
-			
 		});
 	}
-
+	
 	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
@@ -101,15 +111,4 @@ public class MainActivity extends ActionBarActivity {
 		return true;
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
 }

@@ -6,17 +6,17 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
 public class ListViewAdapter extends BaseAdapter {
 
-	ArrayList<String> list;
+	ArrayList<String[]> list;
 	Context context;
+	String[] day_names = {"S", "M", "T", "W", "TR", "F", "ST"};
 	
-	public ListViewAdapter(ArrayList<String> list, Context context){
+	public ListViewAdapter(ArrayList<String[]> list, Context context){
 		this.list = list;
 		this.context = context;
 	}
@@ -24,19 +24,19 @@ public class ListViewAdapter extends BaseAdapter {
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return list.size()/3;
+		return list.size();
 	}
 
 	@Override
 	public Object getItem(int position) {
 		// TODO Auto-generated method stub
-		return position*3;
+		return list.get(position);
 	}
 
 	@Override
 	public long getItemId(int position) {
 		// TODO Auto-generated method stub
-		return position*3;
+		return position;
 	}
 
 	@Override
@@ -53,32 +53,24 @@ public class ListViewAdapter extends BaseAdapter {
 		final TextView text2 = (TextView) v.findViewById(R.id.textView2);
 	    final Button button = (Button) v.findViewById(R.id.button1);
 		
-	    if(list.get(position*3).equalsIgnoreCase(""))
-	    {
-	    	text.setText("Not Set");
-	    }
+	    String[] array = list.get(position);
+	    if(array[0].equalsIgnoreCase("on"))
+	    	button.setText("ON");
 	    else
-	    {
-	    	text.setText(list.get(position*3));
-	    }
+	    	button.setText("OFF");
 	    
-	    if(list.get(position*3+1).equalsIgnoreCase(""))
-	    {
-	    	text2.setText("");
-	    }
-	    else
-	    {
-	    	text2.setText(list.get(position*3+1));
-	    }
+	    String time = array[1]+":"+array[2];
+	    text.setText(time);
 	    
-	    if(list.get(position*3+2).equalsIgnoreCase(""))
+	    String days = "";
+	    for(int i = 3; i < 10; i++)
 	    {
-	    	button.setText("Off");
+	    	if(array[i] != "")
+	    	{
+	    		days += day_names[i-3]+" ";
+	    	}
 	    }
-	    else
-	    {
-	    	button.setText(list.get(position*3+2));
-	    }	    
+	    text2.setText(days);
 	    
 		return v;
 	}

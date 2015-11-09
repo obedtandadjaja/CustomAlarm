@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/alarm" >
+    android:background="#ffffff" >
 
     <EditText
         android:id="@+id/editText1"
@@ -12,7 +12,7 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:ems="10"
-        android:textColor="#ffffff"
+        android:textColor="#000000"
         android:inputType="number" >
 
         <requestFocus />
@@ -22,11 +22,12 @@
         android:id="@+id/stopAlarm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_alignRight="@+id/textView1"
         android:layout_below="@+id/editText1"
         android:layout_marginTop="22dp"
-        android:textColor="#ffffff"
-        android:text="Turn Off Alarm" />
+        android:text="Turn Off Alarm"
+        android:textColor="#ffffff" />
 
     <TextView
         android:id="@+id/textView1"
@@ -37,7 +38,7 @@
         android:layout_marginBottom="20dp"
         android:text="Large Text"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#ffffff"
+        android:textColor="#000000"
         android:textSize="40dp"
         android:textStyle="bold" />
 

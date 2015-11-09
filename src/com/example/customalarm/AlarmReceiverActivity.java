@@ -1,7 +1,6 @@
 package com.example.customalarm;
 
 import java.io.IOException;
-import java.util.Random;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,8 +8,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -56,20 +53,25 @@ public class AlarmReceiverActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				EditText edit = (EditText) findViewById(R.id.editText1);
-				int result = random1*random2;
-				int userresult = Integer.parseInt(edit.getText().toString());
-				if(userresult == result)
+				try
 				{
-					mMediaPlayer.stop();
-	                finish();
+					EditText edit = (EditText) findViewById(R.id.editText1);
+					int result = random1*random2;
+					int userresult = Integer.parseInt(edit.getText().toString());
+					if(userresult == result)
+					{
+						mMediaPlayer.stop();
+		                finish();
+					}
+					else
+					{
+						Toast.makeText(context, "Wrong answer!", Toast.LENGTH_SHORT).show();
+						edit.setText("");
+					}
 				}
-				else
+				catch(Exception e)
 				{
-					Toast.makeText(context, "Wrong answer!", Toast.LENGTH_SHORT).show();
-					edit.setText("");
 				}
-				
 			}
         });
         
