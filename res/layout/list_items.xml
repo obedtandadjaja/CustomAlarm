@@ -23,6 +23,7 @@
 		android:textColor="#ffffff"
 		android:textStyle="bold"
 		android:focusable="false"
+		android:background="#00000000"
         android:text="Button" />
 
     <TextView

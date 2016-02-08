@@ -29,11 +29,14 @@ public class AlarmReceiverActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | 
+        	    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | 
+        	    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | 
+        	    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON,
+        	    WindowManager.LayoutParams.FLAG_FULLSCREEN | 
+        	    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | 
+        	    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | 
+        	    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.alarm);
  
         TextView text = (TextView) findViewById(R.id.textView1);
@@ -44,9 +47,10 @@ public class AlarmReceiverActivity extends Activity {
         text.setText(""+random1+" X "+random2+" =");
         
         SharedPreferences storage = getSharedPreferences("storage", Context.MODE_PRIVATE);
-        int currVolume = storage.getInt("volume", 0);
-        String music = storage.getString("song", "");
         
+        Bundle extras = getIntent().getExtras();
+        int currVolume = extras.getInt("volume", 0);
+        String music = extras.getString("song", "").toLowerCase();
         Button stopAlarm = (Button) findViewById(R.id.stopAlarm);
         stopAlarm.setOnClickListener(new OnClickListener() {
 
@@ -79,8 +83,6 @@ public class AlarmReceiverActivity extends Activity {
     }
  
     private void playSound(Context context, Uri alert, int volume) {
-        mMediaPlayer = new MediaPlayer();
-        
 		float log1=(float)(Math.log(100-volume)/Math.log(100));
 		
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
@@ -88,6 +90,7 @@ public class AlarmReceiverActivity extends Activity {
             vibrator.vibrate(400);
         
         try {
+        	mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setDataSource(this, alert);
             final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {

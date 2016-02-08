@@ -340,31 +340,28 @@ public class Edit extends Activity {
 	
 	public void setAlarm(ArrayList<Integer> days)
 	{
-		Intent intent1 = new Intent(Edit.this, AlarmReceiverActivity.class);
 		Calendar cal = Calendar.getInstance();
 		
 		for(int i = 0; i < days.size(); i++)
 		{
-			if(time.getCurrentHour()>12)
-			{
-				cal.set(Calendar.HOUR, (time.getCurrentHour()-12));
-				cal.set(Calendar.AM_PM, 1);
-			}
-			else
-			{
-				cal.set(Calendar.HOUR, (time.getCurrentHour()));
-				cal.set(Calendar.AM_PM, 0);
-			}
-			
-			cal.set(Calendar.DAY_OF_WEEK, days.get(i));
+			cal.set(Calendar.HOUR_OF_DAY, time.getCurrentHour());
+			cal.set(Calendar.DAY_OF_WEEK, days.get(i)+1);
 	        cal.set(Calendar.MINUTE, time.getCurrentMinute());
 	        cal.set(Calendar.SECOND, 0);
-	        
-	        int id = (int) System.currentTimeMillis();
-	        
-			PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), id, intent1, PendingIntent.FLAG_ONE_SHOT);
+			
+	        //Create a new PendingIntent and add it to the AlarmManager
+	        Intent intent = new Intent(this, AlarmReceiverActivity.class);
+	        intent.putExtra("song", music.getText().toString());
+	        intent.putExtra("volume", volume.getProgress());
+	        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+	            12345, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 	        AlarmManager am = (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
-	        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 24*60*60*1000, pendingIntent);
+//	        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
+	        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 7*24*60*60*1000, pendingIntent);
+	        
+//			PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), id, intent1, PendingIntent.FLAG_ONE_SHOT);
+//	        AlarmManager am = (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
+	        
 		}
 	}
 	
